@@ -1,5 +1,5 @@
 import type { Module } from "../data/curriculum";
-import { ArrowLeft, Zap, Trophy, Flame, BookOpen, Code2 } from "lucide-react";
+import { ArrowLeft, Zap, Flame, BookOpen, Code2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface ProgressViewProps {

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import type { Lesson } from "../data/curriculum";
-import { ArrowLeft, Play, RotateCcw, Lightbulb, CheckCircle2, XCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Play, RotateCcw, Lightbulb, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ExerciseViewProps {
