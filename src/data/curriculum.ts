@@ -13,6 +13,14 @@ export interface Exercise {
   solution: string;
   tests: string[];
   hints: string[];
+  typeChecks?: TypeCheck[];
+}
+
+export interface TypeCheck {
+  /** Regex pattern to match against the raw source code */
+  pattern: string;
+  /** Error message if the pattern is NOT found */
+  message: string;
 }
 
 export interface Flashcard {
@@ -88,6 +96,10 @@ if (typeof desconocido === "number") {
             "typeof precio === 'number' && precio === 99.99",
             "typeof producto === 'string' && producto === 'Laptop'"
           ],
+          typeChecks: [
+            { pattern: "precio\\s*:\\s*number", message: "La variable `precio` debe tener anotación de tipo `: number`" },
+            { pattern: "producto\\s*:\\s*string", message: "La variable `producto` debe tener anotación de tipo `: string`" }
+          ],
           hints: ["Usa la sintaxis: let variable: tipo = valor;", "number para números, string para texto"]
         },
         flashcards: [
@@ -145,6 +157,10 @@ const combined: number[] = [...first, ...second]; // [1,2,3,4]
           tests: [
             "Array.isArray(notas) && notas.length === 3 && notas[0] === 85",
             "Array.isArray(usuario) && usuario[0] === 'Ana' && usuario[1] === 25 && usuario[2] === true"
+          ],
+          typeChecks: [
+            { pattern: "notas\\s*:\\s*number\\[\\]", message: "El array `notas` debe tener anotación de tipo `: number[]`" },
+            { pattern: "usuario\\s*:\\s*\\[\\s*string\\s*,\\s*number\\s*,\\s*boolean\\s*\\]", message: "La tupla `usuario` debe tener anotación de tipo `: [string, number, boolean]`" }
           ],
           hints: ["Para arrays: let nombre: tipo[] = [...]", "Para tuplas: let nombre: [tipo1, tipo2, ...] = [...]"]
         },
@@ -216,6 +232,11 @@ function error(msg: string): never {
             "calcularArea(10, 5) === 25",
             "calcularArea(6, 4) === 12"
           ],
+          typeChecks: [
+            { pattern: "base\\s*:\\s*number", message: "El parámetro `base` debe tener anotación de tipo `: number`" },
+            { pattern: "altura\\s*:\\s*number", message: "El parámetro `altura` debe tener anotación de tipo `: number`" },
+            { pattern: "\\)\\s*:\\s*number", message: "La función debe tener tipo de retorno `: number`" }
+          ],
           hints: ["El área de un triángulo es (base * altura) / 2", "No olvides anotar el tipo de retorno: number"]
         },
         flashcards: [
@@ -278,6 +299,11 @@ const input = document.getElementById("email")!; // le dices a TS "confía, no e
           tests: [
             "getFullName({ first: 'Juan', last: 'Pérez' }) === 'Juan Pérez'",
             "getFullName({ first: 'Ana', last: 'López', middle: 'María' }) === 'Ana María López'"
+          ],
+          typeChecks: [
+            { pattern: "first\\s*:\\s*string", message: "La propiedad `first` debe tener anotación de tipo `: string`" },
+            { pattern: "middle\\s*\\?\\s*:\\s*string", message: "La propiedad `middle` debe ser opcional con `middle?: string`" },
+            { pattern: "\\)\\s*:\\s*string", message: "La función debe tener tipo de retorno `: string`" }
           ],
           hints: ["Usa destructuring en el parámetro: { prop1, prop2 }: { ... }", "Verifica si middle existe con un ternario"]
         },
@@ -370,6 +396,12 @@ interface Config {
             "miProducto.nombre !== undefined && typeof miProducto.nombre === 'string'",
             "typeof miProducto.precio === 'number' && typeof miProducto.enStock === 'boolean'"
           ],
+          typeChecks: [
+            { pattern: "interface\\s+Producto", message: "Debes definir una `interface Producto`" },
+            { pattern: "nombre\\s*:\\s*string", message: "La propiedad `nombre` debe tener tipo `string`" },
+            { pattern: "descripcion\\s*\\?\\s*:", message: "La propiedad `descripcion` debe ser opcional con `?`" },
+            { pattern: "miProducto\\s*:\\s*Producto", message: "El objeto `miProducto` debe tener anotación de tipo `: Producto`" }
+          ],
           hints: ["Usa ? para propiedades opcionales", "Declara el objeto con const obj: Interface = { ... }"]
         },
         flashcards: [
@@ -440,6 +472,12 @@ const config = {
             "getEstado(200) === 'ok'",
             "getEstado(500) === 'error'",
             "getEstado(301) === 'loading'"
+          ],
+          typeChecks: [
+            { pattern: "type\\s+Respuesta\\s*=", message: "Debes definir un `type Respuesta` con union de literals" },
+            { pattern: "\"ok\"\\s*\\|\\s*\"error\"\\s*\\|\\s*\"loading\"", message: "El tipo `Respuesta` debe ser la union `\"ok\" | \"error\" | \"loading\"`" },
+            { pattern: "code\\s*:\\s*number", message: "El parámetro `code` debe tener anotación de tipo `: number`" },
+            { pattern: "\\)\\s*:\\s*Respuesta", message: "La función debe tener tipo de retorno `: Respuesta`" }
           ],
           hints: ["Usa type Nombre = \"valor1\" | \"valor2\" para unions", "Retorna uno de los literales según la condición"]
         },
@@ -512,6 +550,11 @@ let n: never;     // Nunca ocurre (throw, infinite loop)
           tests: [
             "esLectura(HttpMethod.GET) === true",
             "esLectura(HttpMethod.POST) === false"
+          ],
+          typeChecks: [
+            { pattern: "enum\\s+HttpMethod", message: "Debes definir un `enum HttpMethod`" },
+            { pattern: "method\\s*:\\s*HttpMethod", message: "El parámetro `method` debe tener tipo `HttpMethod`" },
+            { pattern: "\\)\\s*:\\s*boolean", message: "La función debe tener tipo de retorno `: boolean`" }
           ],
           hints: ["enum Nombre { Clave = \"VALOR\" }", "Compara con === contra el enum member"]
         },
@@ -603,6 +646,11 @@ class Config {
             "new Rectangulo(5, 3).area() === 15",
             "new Rectangulo(5, 3).perimetro() === 16"
           ],
+          typeChecks: [
+            { pattern: "class\\s+Rectangulo", message: "Debes definir una `class Rectangulo`" },
+            { pattern: "ancho\\s*:\\s*number", message: "La propiedad `ancho` debe tener tipo `number`" },
+            { pattern: "area\\s*\\(\\s*\\)\\s*:\\s*number", message: "El método `area()` debe tener tipo de retorno `: number`" }
+          ],
           hints: ["Usa constructor(public prop: tipo) como shorthand", "Accede con this.ancho, this.alto"]
         },
         flashcards: [
@@ -683,6 +731,12 @@ class Documento implements Printable, Loggable {
           tests: [
             "new Auto('Toyota', 4).describir() === 'Auto Toyota con 4 puertas'",
             "new Auto('Ford', 2).marca === 'Ford'"
+          ],
+          typeChecks: [
+            { pattern: "class\\s+Vehiculo", message: "Debes definir una clase base `Vehiculo`" },
+            { pattern: "class\\s+Auto\\s+extends\\s+Vehiculo", message: "La clase `Auto` debe extender `Vehiculo`" },
+            { pattern: "marca\\s*:\\s*string", message: "La propiedad `marca` debe tener tipo `string`" },
+            { pattern: "describir\\s*\\(\\s*\\)\\s*:\\s*string", message: "El método `describir()` debe tener tipo de retorno `: string`" }
           ],
           hints: ["Llama a super(marca) en el constructor del hijo", "Usa template literals para el string de retorno"]
         },
@@ -855,6 +909,10 @@ const typed: ApiResponse<string[]> = { data: ["a"] };
             "JSON.stringify(envolverEnArray(5)) === '[5]'",
             "JSON.stringify(envolverEnArray('hola')) === '[\"hola\"]'"
           ],
+          typeChecks: [
+            { pattern: "envolverEnArray\\s*<\\s*T\\s*>", message: "La función debe usar un generic `<T>`" },
+            { pattern: ":\\s*T\\[\\]", message: "El tipo de retorno debe ser `T[]`" }
+          ],
           hints: ["Usa <T> después del nombre de la función", "El retorno es T[] (array del mismo tipo)"]
         },
         flashcards: [
@@ -936,6 +994,10 @@ type SoloLectura<T> = {
           tests: [
             "cajaDeNumero.contenido === 42",
             "typeof cajaDeNumero.etiqueta === 'string'"
+          ],
+          typeChecks: [
+            { pattern: "interface\\s+Caja\\s*<\\s*T\\s*>", message: "La interface `Caja` debe usar un generic `<T>`" },
+            { pattern: "contenido\\s*:\\s*T", message: "La propiedad `contenido` debe tener tipo `T`" }
           ],
           hints: ["interface Nombre<T> { ... }", "Usa T como tipo de la propiedad contenido"]
         },
@@ -1021,6 +1083,10 @@ class QueryBuilder<T> {
           tests: [
             "filtrar([{n:'a',x:1},{n:'b',x:2},{n:'c',x:1}], 'x', 1).length === 2",
             "filtrar([{a:true},{a:false},{a:true}], 'a', true).length === 2"
+          ],
+          typeChecks: [
+            { pattern: "<\\s*T\\s*,\\s*K\\s+extends\\s+keyof\\s+T\\s*>", message: "La función debe usar generics `<T, K extends keyof T>`" },
+            { pattern: "T\\[K\\]", message: "El valor debe usar el tipo indexado `T[K]`" }
           ],
           hints: ["Usa dos type parameters: T y K extends keyof T", "El valor tiene tipo T[K] para que sea type-safe"]
         },
@@ -1116,6 +1182,10 @@ async function safeFetch<T>(url: string): Promise<Result<T>> {
           tests: [
             "delay(0, 42).then(v => v === 42).then(r => r === true ? 'pass' : 'fail') !== undefined",
             "delay(0, 'hola') instanceof Promise"
+          ],
+          typeChecks: [
+            { pattern: "delay\\s*<\\s*T\\s*>", message: "La función `delay` debe usar un generic `<T>`" },
+            { pattern: "Promise\\s*<\\s*T\\s*>", message: "El tipo de retorno debe ser `Promise<T>`" }
           ],
           hints: ["Retorna new Promise<T>(resolve => ...)", "Usa setTimeout para el delay"]
         },
@@ -1479,6 +1549,12 @@ function area2(forma: Forma): number {
             "describir({ tipo: 'email', asunto: 'Hola' }).includes('Hola')",
             "describir({ tipo: 'sms', telefono: '123' }).includes('123')",
             "describir({ tipo: 'push', titulo: 'Alerta' }).includes('Alerta')"
+          ],
+          typeChecks: [
+            { pattern: "tipo\\s*:\\s*['\"]email['\"]", message: "Debes definir una variante con `tipo: 'email'`" },
+            { pattern: "tipo\\s*:\\s*['\"]sms['\"]", message: "Debes definir una variante con `tipo: 'sms'`" },
+            { pattern: "tipo\\s*:\\s*['\"]push['\"]", message: "Debes definir una variante con `tipo: 'push'`" },
+            { pattern: "\\)\\s*:\\s*string", message: "La función `describir` debe tener tipo de retorno `: string`" }
           ],
           hints: ["Usa un campo común 'tipo' para discriminar", "switch(n.tipo) para manejar cada variante"]
         },
@@ -1978,6 +2054,11 @@ emitter.on("login", (data) => console.log(data.userId)); // TS sabe el tipo
           tests: [
             "safeDivide(10, 2).ok === true && safeDivide(10, 2).value === 5",
             "safeDivide(10, 0).ok === false"
+          ],
+          typeChecks: [
+            { pattern: "type\\s+(Result|Success|Failure)", message: "Debes definir types para el patrón Result" },
+            { pattern: "ok\\s*:\\s*(true|false|boolean)", message: "El discriminante `ok` debe tener tipo literal `true` o `false`" },
+            { pattern: "\\)\\s*:\\s*Result", message: "La función debe tener tipo de retorno `Result`" }
           ],
           hints: ["Result es un discriminated union con 'ok' como discriminante", "Retorna el objeto literal con la forma correcta según el caso"]
         },

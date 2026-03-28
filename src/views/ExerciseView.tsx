@@ -1,16 +1,18 @@
 import { useState, useRef } from "react";
 import type { Lesson } from "../data/curriculum";
-import { ArrowLeft, Play, RotateCcw, Lightbulb, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Play, RotateCcw, Lightbulb, CheckCircle2, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ExerciseViewProps {
   lesson: Lesson;
   onComplete: () => void;
   onBack: () => void;
+  onNextLesson?: () => void;
+  nextLessonTitle?: string;
   isCompleted: boolean;
 }
 
-export function ExerciseView({ lesson, onComplete, onBack, isCompleted }: ExerciseViewProps) {
+export function ExerciseView({ lesson, onComplete, onBack, onNextLesson, nextLessonTitle, isCompleted }: ExerciseViewProps) {
   const [code, setCode] = useState(lesson.exercise.starterCode);
   const [output, setOutput] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "success" | "error">(isCompleted ? "success" : "idle");
@@ -27,6 +29,8 @@ export function ExerciseView({ lesson, onComplete, onBack, isCompleted }: Exerci
       })
       // Remove type annotations after colons: `: Type` including generics
       .replace(/:\s*(?:readonly\s+)?(?:[A-Z]\w*(?:<[^>]*>)?(?:\[\])*(?:\s*\|\s*(?:[A-Z]\w*(?:<[^>]*>)?(?:\[\])*|"[^"]*"|'[^']*'|null|undefined))*|string|number|boolean|void|never|any|unknown|null|undefined)(?:\[\])*/g, '')
+      // Remove tuple type annotations: `: [type, type, ...]`
+      .replace(/:\s*\[(?:\s*(?:string|number|boolean|null|undefined|[A-Z]\w*)\s*,?\s*)+\]/g, '')
       // Remove type annotations in destructured params like { a, b }: { a: string; b: number }
       .replace(/\}:\s*\{[^}]*\}/g, '}')
       // Remove angle bracket generics on function calls/definitions: fn<T>(...) → fn(...)
@@ -59,6 +63,22 @@ export function ExerciseView({ lesson, onComplete, onBack, isCompleted }: Exerci
 
   const runCode = () => {
     const logs: string[] = [];
+
+    // Run type checks first (validate TS annotations in source code)
+    const typeChecks = lesson.exercise.typeChecks;
+    if (typeChecks && typeChecks.length > 0) {
+      for (const check of typeChecks) {
+        const regex = new RegExp(check.pattern);
+        if (!regex.test(code)) {
+          logs.push(`⚠️ Tipo: ${check.message}`);
+          setOutput(logs);
+          setStatus("error");
+          return;
+        }
+      }
+      logs.push("✅ Tipos correctos");
+    }
+
     try {
       const mockConsole = { log: (...args: unknown[]) => logs.push(args.map(String).join(" ")) };
 
@@ -161,10 +181,21 @@ export function ExerciseView({ lesson, onComplete, onBack, isCompleted }: Exerci
               ))}
             </div>
             {status === "success" && (
-              <div className="mt-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl p-4 md:p-5 text-center">
-                <p className="font-bold text-lg md:text-xl">+50 XP</p>
-                <p className="text-emerald-100 text-sm mt-0.5">Ejercicio completado</p>
-              </div>
+              <>
+                <div className="mt-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl p-4 md:p-5 text-center">
+                  <p className="font-bold text-lg md:text-xl">+50 XP</p>
+                  <p className="text-emerald-100 text-sm mt-0.5">Ejercicio completado</p>
+                </div>
+                {onNextLesson && (
+                  <Button
+                    onClick={onNextLesson}
+                    className="w-full mt-3 gap-2 bg-blue-600 hover:bg-blue-700 text-white md:text-base md:py-5"
+                  >
+                    Siguiente: {nextLessonTitle}
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                )}
+              </>
             )}
           </div>
         )}
@@ -216,13 +247,23 @@ export function ExerciseView({ lesson, onComplete, onBack, isCompleted }: Exerci
               Pista
             </Button>
           )}
-          <Button
-            onClick={runCode}
-            className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white md:text-base md:py-5"
-          >
-            <Play className="w-4 h-4" />
-            Ejecutar
-          </Button>
+          {status === "success" && onNextLesson ? (
+            <Button
+              onClick={onNextLesson}
+              className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700 text-white md:text-base md:py-5"
+            >
+              Siguiente lección
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          ) : (
+            <Button
+              onClick={runCode}
+              className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white md:text-base md:py-5"
+            >
+              <Play className="w-4 h-4" />
+              Ejecutar
+            </Button>
+          )}
         </div>
       </div>
     </div>
